@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherScope - Will It Rain On My Parade?</title>
+    <meta name="description" content="Smart Weather Advisor — data-driven weather insights, crop recommendations and practical guides for farmers." />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%2300a8ff'/%3E%3C/svg%3E">
+    
+    <!-- Social / SEO meta -->
+    <meta property="og:title" content="WeatherScope - Smart Weather Advisor" />
+    <meta property="og:description" content="Data-driven weather insights, crop recommendations and practical guides for farmers. Built for the NASA Space Apps Challenge." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="author" content="WeatherScope Team" />
+    <meta name="theme-color" content="#00a8ff">
+</head>
+<body>
+    <!-- Weather Animation Container -->
+    <div id="weatherAnimation" class="weather-animation"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-container" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header class="app-header">
+            <div class="logo">
+                <div class="logo-icon">🌤️</div>
+                <div>
+                    <h1 class="logo-text">WeatherScope</h1>
+                    <p class="tagline">Will It Rain On My Parade? - NASA Space Apps 2025</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="control-group">
+                    <button class="control-btn" id="voiceSearchBtn">
+                        <span>🎤</span> Voice
+                    </button>
+                </div>
+                <div class="control-group">
+                    <button class="control-btn" id="unitToggle">°C / °F</button>
+                    <select class="control-btn" id="languageSelect">
+                        <option value="en">English</option>
+                    </select>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkModeToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <input type="text" class="search-bar" id="searchInput" placeholder="Search for a location (e.g. Mumbai, Pune, Delhi, Varanasi, Jaunpur)">
+            <button class="search-btn" id="searchButton">🔍</button>
+        </div>
+
+        <div class="dashboard">
+            <div class="left-column">
+                <div class="weather-card current-weather">
+                    <div class="location-info">
+                        <h2 id="locationName">Nashik, Maharashtra</h2>
+                        <p id="locationDetails">Mumbai Naka Area</p>
+                        <div class="weather-condition">
+                            <span class="weather-icon sunny" id="weatherIcon">☀️</span>
+                            <span id="weatherCondition">Comfortable</span>
+                        </div>
+                    </div>
+                    <div class="temp-display" id="currentTemp">24°C</div>
+                </div>
+
+                <div class="weather-card">
+                    <h3>Weather Metrics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span>Feels Like</span>
+                            <span class="metric-value" id="feelsLike">25°C</span>
+                        </div>
+                        <div class="metric">
+                            <span>Humidity</span>
+                            <span class="metric-value" id="humidity">65%</span>
+                        </div>
+                        <div class="metric">
+                            <span>Wind Speed</span>
+                            <span class="metric-value" id="windSpeed">12 km/h</span>
+                        </div>
+                        <div class="metric">
+                            <span>Air Quality Index</span>
+                            <span class="metric-value" id="airQuality">42 (Good)</span>
+                        </div>
+                        <div class="metric">
+                            <span>UV Index</span>
+                            <span class="metric-value" id="uvIndex">4 (Moderate)</span>
+                        </div>
+                        <div class="metric">
+                            <span>Visibility</span>
+                            <span class="metric-value" id="visibility">10 km</span>
+                        </div>
+                        <div class="metric">
+                            <span>Pressure</span>
+                            <span class="metric-value" id="pressure">1013 hPa</span>
+                        </div>
+                        <div class="metric">
+                            <span>Precipitation</span>
+                            <span class="metric-value" id="precipitation">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span>Expected Rainfall</span>
+                            <span class="metric-value" id="expectedRainfall">0 mm</span>
+                        </div>
+                        <div class="metric">
+                            <span>Sunrise</span>
+                            <span class="metric-value" id="sunrise">6:12 AM</span>
+                        </div>
+                        <div class="metric">
+                            <span>Sunset</span>
+                            <span class="metric-value" id="sunset">6:45 PM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agricultural Advisory Section -->
+                <div class="weather-card crop-card">
+                    <h3>🌱 Agricultural Advisory</h3>
+                    <div class="crop-recommendation" id="cropRecommendation">
+                        <!-- Crop recommendations will be loaded here -->
+                    </div>
+                    <div class="soil-health" id="soilHealth">
+                        <!-- Soil health metrics will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Farming Tips Section -->
+                <div class="weather-card farming-tips">
+                    <h3>💡 Farming Tips & Alerts</h3>
+                    <div class="agricultural-alerts" id="agriculturalAlerts">
+                        <!-- Agricultural alerts will be loaded here -->
+                    </div>
+                    <div class="tips-list" id="farmingTips">
+                        <!-- Farming tips will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="weather-card event-saver">
+                    <h3>Save Your Event</h3>
+                    <p>Plan your activities with weather alerts</p>
+                    
+                    <form id="eventForm" class="event-form">
+                        <div class="form-group">
+                            <label class="form-label" for="eventName">Event Name</label>
+                            <input type="text" id="eventName" class="form-control" placeholder="e.g., Birthday Party" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="eventLocation">Location</label>
+                            <input type="text" id="eventLocation" class="form-control" placeholder="e.g., Mumbai Naka" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="eventDate">Date</label>
+                            <input type="date" id="eventDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="eventTime">Time</label>
+                            <input type="time" id="eventTime" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="eventAlarm">Alert Before</label>
+                            <select id="eventAlarm" class="form-control">
+                                <option value="30">30 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="120">2 hours</option>
+                                <option value="1440">1 day</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <button type="submit" class="btn" style="width: 100%;">Save Event</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="weather-card">
+                    <h3>Interactive Weather Map</h3>
+                    <div id="weatherMap">
+                        <div class="map-placeholder">
+                            <h3>Interactive Map</h3>
+                            <p>Search for a location to see it on the map</p>
+                            <p>Try searching for: Mumbai, Pune, Delhi, Varanasi, Jaunpur, etc.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weather-card">
+                    <h3>Your Saved Events</h3>
+                    <div class="event-list" id="eventList">
+                        <!-- Events will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recent-events">
+            <h3 class="section-title">Recently Saved Events</h3>
+            <div class="events-grid" id="recentEvents">
+                <!-- Recent events will be added here dynamically -->
+            </div>
+        </div>
+
+        <div class="forecast-section">
+            <h3 class="section-title">24-Hour Forecast</h3>
+            <div class="hourly-container" id="hourlyForecast">
+                <!-- Hourly forecast items will be inserted here by JavaScript -->
+            </div>
+        </div>
+
+        <div class="forecast-section">
+            <h3 class="section-title">5-Day Forecast</h3>
+            <div class="daily-container" id="dailyForecast">
+                <!-- Daily forecast items will be inserted here by JavaScript -->
+            </div>
+        </div>
+
+        <div class="notification" id="notification">
+            <div class="notification-content">
+                <h4>Weather Alert</h4>
+                <p id="notificationMessage">No active alerts</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="footer-content">
+            <h3 class="footer-title">Will It Rain On My Parade?</h3>
+            <p class="footer-subtitle">NASA Space App Challenge 2025 - WeatherScope Project</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
